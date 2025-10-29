@@ -31,3 +31,6 @@ src/azure.ts
 
 #AISSTREAM credentials
 src/aisstream.ts
+
+#TODO
+todo.txt

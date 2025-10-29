@@ -6,20 +6,26 @@ import {
   consultDB,
   getFactArgument,
 } from "./utils";
+import { mapWeather } from "./weather_api.ts";
 
 export const initialIS = (): InformationState => {
   const predicates: { [index: string]: string } = {
     // Mapping from predicate to sort
+    
+    // TO DO: FIGURE OUT PREDICATES
     favorite_food: "food",
-    booking_course: "course",
-    booking_day: "day"
+    location: "location",
   };
   const individuals: { [index: string]: string } = {
     // Mapping from individual to sort
+
+    // TODO: FIGURE OUT INDIVIDUALS
     pizza: "food",
-    LT2319: "course",
-    tuesday: "day",
-    friday: "day"
+    gothenburg: "location",
+    varberg: "location",
+    halmstad: "location",
+    marstrand: "location"
+
   };
   return {
     domain: {
@@ -28,27 +34,23 @@ export const initialIS = (): InformationState => {
       plans: [
         {
           type: "issue",
-          content: WHQ("booking_room"),
+          content: WHQ("look_up_weather"),
           plan: [                        
-            findout(WHQ("booking_day")),
-            findout(WHQ("booking_course")),
-            consultDB(WHQ("booking_room")),
+            findout(WHQ("location")),
+            consultDB(WHQ("look_up_weather")),
           ],
         },
       ],
     },
     database: {
       consultDB: (question, facts) => {
-        if (objectsEqual(question, WHQ("booking_room"))) {
-          const course = getFactArgument(facts, "booking_course");
-          if (course == "LT2319") {
-            const day = getFactArgument(facts, "booking_day");
-            if (day == "tuesday"){
-              return { predicate: "booking_room", argument: "J440" };
-            } else if (day == "friday"){
-              return { predicate: "booking_room", argument: "G212" }
-            }
-          }
+        if (objectsEqual(question, WHQ("look_up_weather"))) {
+          const location = getFactArgument(facts, "location");
+                    
+
+          const answer = mapWeather(location!) // API CALL - then WEATHER MAPPING TO CATEGORIES
+          
+          return { predicate: "look_up_weather", argument: answer }
         }
         return null;
       },
@@ -62,7 +64,7 @@ export const initialIS = (): InformationState => {
           content: null,
         },
       ],
-      bel: [{ predicate: "favorite_food", argument: "pizza" }],
+      bel: [/*{ predicate: "favorite_food", argument: "pizza" }*/],
     },
     shared: { lu: undefined, qud: [], com: [] },
   };

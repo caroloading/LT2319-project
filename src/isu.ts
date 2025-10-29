@@ -1,8 +1,8 @@
-import { createActor, setup, AnyMachineSnapshot, sendTo, assign } from "xstate";
+import { createActor, setup, AnyMachineSnapshot, sendTo, assign, fromPromise } from "xstate";
 import { speechstate } from "speechstate";
 import { createBrowserInspector } from "@statelyai/inspect";
 import { KEY } from "./azure.ts";
-import { DMContext, DMEvent, NextMovesEvent } from "./types";
+import { DMContext, DMEvent, NextMovesEvent, Message } from "./types";
 import { nlg, nlu } from "./nlug";
 import { dme } from "./dme";
 import { initialIS } from "./is";
@@ -27,6 +27,22 @@ const settings = {
 const dmMachine = setup({
   actors: {
     dme: dme,
+    getModelReply : fromPromise<any, Message[]> (({input}) => {
+      const body = {
+        model: "gemma2",
+        stream: false,
+        messages: input,
+        system: "You should only rephrase the message given to you.",
+        options: {
+              "num_predict": 20
+        }
+      };
+      return fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }).then((response) => response.json());
+    }
+    ),
   },
   actions: {
     speak_next_moves: ({ context, event }) =>
@@ -50,6 +66,7 @@ const dmMachine = setup({
     return {
       ssRef: spawn(speechstate, { input: settings }),
       is: initialIS(),
+      nextMove: [{type: "greet", content: null}]
     };
   },
   id: "DM",
@@ -104,20 +121,57 @@ const dmMachine = setup({
         Generate: {
           initial: "Idle",
           states: {
+            //PrepLLM: {
+            //  invoke:{
+            //    src: "getModelReply",
+            //    input: ({context}) => [
+            //      {
+            //        role: "system", 
+            //        content: "Rephrase the utterances."
+            //      }
+            //    ],
+            //    onDone: {target: "Idle" }
+            //  }
+            //},
             Idle: {
               on: {
                 NEXT_MOVES: {
-                  target: "Speaking",
-                  actions: sendTo("dmeID", ({ event }) => ({
+                  actions: [
+                    assign(({event}) => {
+                      return {
+                        nextMove: event.value
+                      }
+                    }), 
+                    sendTo("dmeID", ({ event }) => ({
                     type: "SAYS",
                     value: {
                       speaker: "sys",
                       moves: event.value,
                     },
-                  })),
+                  }))
+                  ], 
+                  target: "Speaking",
                 },
               },
             },
+            //GetUtterance: {
+            //  invoke:{
+            //    src: "getModelReply",
+            //    input: ({context}) => [
+            //      {
+            //        role: "assistant",
+            //        content: nlg((context.nextMove!))
+            //      }
+            //    ],
+            //    onDone: {target: "Speaking",
+            //      actions: assign(({event, context}) => {
+            //        return {
+            //          nextUtterance: event.output.message.content
+            //        }
+            //      })
+            //     }
+            //  }
+            //},
             Speaking: {
               entry: "speak_next_moves",
               on: {

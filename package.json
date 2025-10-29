@@ -10,13 +10,16 @@
     "test": "vitest"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0",
-    "vitest": "^2.0.5"
+    "vite": "^7.1.9",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@statelyai/inspect": "^0.4.0",
-    "speechstate": "^2.15.0"
+    "openmeteo": "^1.2.1",
+    "speechstate": "^2.15.0",
+    "ws": "^8.18.3"
   },
   "packageManager": "yarn@3.6.4+sha256.7f7d51b38db0d94adf25c512e3f3d3b47d23c97922eecc540f7440f116bdb99a"
 }

@@ -74,9 +74,12 @@ export interface InformationState {
 export interface DMContext extends TotalInformationState {
   ssRef: any;
   lastUserMoves?: Move[];
+  nextMove?: Move[]
+  nextUtterance?: string
 }
 
 export interface DMEContext extends TotalInformationState {
+
   parentRef: any;
 }
 
@@ -105,3 +108,8 @@ export type NextMovesEvent = {
   type: "NEXT_MOVES";
   value: Move[];
 };
+
+export type Message = {
+  role: "assistant" | "user" | "system";
+  content: string;
+}
