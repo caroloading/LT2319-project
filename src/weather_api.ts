@@ -3,97 +3,113 @@
 import { fetchWeatherApi } from 'openmeteo';
 const WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
 
-const coordinates = {
-	gothenburg: {lat: 57.706, long: 11.961},
-	halmstad: {lat: 56.658, long: 12.850},
-	varberg: {lat: 57.111, long: 12.236},
-	marstrand: {lat: 57.885, long: 11.588}
-	}
+const coordinates = [
+	{lat: 57.706, long: 11.961}, // gothenburg
+	{lat: 56.658, long: 12.850}, //halmstad
+	{lat: 57.111, long: 12.236}, // varberg
+	{lat: 57.885, long: 11.588} // marstrand
+]
 
-const goth_responses = await fetchWeatherApi(WEATHER_API_URL, getParams(coordinates.gothenburg));
-const halmstad_responses = await fetchWeatherApi(WEATHER_API_URL, getParams(coordinates.halmstad));
-const varberg_responses = await fetchWeatherApi(WEATHER_API_URL, getParams(coordinates.varberg));
-const marstrand_responses = await fetchWeatherApi(WEATHER_API_URL, getParams(coordinates.marstrand));
+const responses = await fetchWeatherApi(WEATHER_API_URL, getParams(coordinates));
 
-const responses: {[key:string]: any } = { gothenburg: goth_responses[0].hourly()!,
-	halmstad: halmstad_responses[0].hourly()!,
-	varberg: varberg_responses[0].hourly()!,
-	marstrand: marstrand_responses[0].hourly()!
+const responses_dict: {[key:string]: any } = { gothenburg: [responses[0].current()!, responses[0].utcOffsetSeconds()],
+	halmstad: [responses[1].current()!, responses[1].utcOffsetSeconds()],
+	varberg: [responses[2].current()!, responses[2].utcOffsetSeconds()],
+	marstrand: [responses[3].current()!,, responses[3].utcOffsetSeconds()]
 }  
 
 console.log(responses)
 
-function getParams(loc: {lat: number, long: number}): any {
-	const date = getDateNow()
+function getParams(coordinates: {lat: number, long: number}[]): any {
+	var lats : number[] = []
+	var longs : number[] = []
+	for (const loc of coordinates){
+		lats.push(loc.lat)
+		longs.push(loc.long)
+	}
+
 	return {
-	"latitude": loc.lat,
-	"longitude": loc.long,
-	"hourly": ["temperature_2m", "precipitation", "pressure_msl", "visibility", "wind_speed_10m", "wind_direction_10m"],
-	"start_date": date,
-	"end_date": "2025-10-06",
+		"latitude": lats,
+		"longitude": longs,
+		"current": ["temperature_2m", "precipitation", "visibility", "wind_speed_10m", "wind_direction_10m"],
 	}
 };
 
-function getDateNow(): string {
-	const date = new Date()
-	return `${date.getFullYear()}-${date.getMonth().toString().padStart(2, '0')}-${date.getDay().toString().padStart(2, '0')}`
-};
-
-
-// Attributes for timezone and location
-//const latitude = response.latitude();
-//const longitude = response.longitude();
-//const elevation = response.elevation();
-//const utcOffsetSeconds = response.utcOffsetSeconds();
-
-//console.log(
-//	`\nCoordinates: ${latitude}°N ${longitude}°E`,
-//	`\nElevation: ${elevation}m asl`,
-//	`\nTimezone difference to GMT+0: ${utcOffsetSeconds}s`,
-//);
-
-
 
 // Note: The order of weather variables in the URL query and the indices below need to match!
-function getWeatherData(hourly: any): any {
+function getWeatherData(current: any, utcOffset: any): any {
 	return {
-		hourly: {
-			time: [...Array((Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval())].map(
-				(_, i) => new Date((Number(hourly.time()) + i * hourly.interval()) * 1000)
-			),
-			temperature_2m: hourly.variables(0)!.valuesArray(),
-			precipitation: hourly.variables(1)!.valuesArray(),
-			pressure_msl: hourly.variables(2)!.valuesArray(),
-			visibility: hourly.variables(3)!.valuesArray(),
-			wind_speed_10m: hourly.variables(4)!.valuesArray(),
-			wind_direction_10m: hourly.variables(5)!.valuesArray(),
+		current: {
+			time: new Date((Number(current.time()) + utcOffset) * 1000),
+			temperature_2m: current.variables(0)!.value(),
+			precipitation: current.variables(1)!.value(),
+			visibility: current.variables(3)!.value(),
+			wind_speed_10m: current.variables(4)!.value(),
+			wind_direction_10m: current.variables(5)!.value(),
 		},
 	}
 }
 
-export function mapWeather(location:string): string {
+export function mapWeather(location:string, aspect: string): string {
 	var response: string[] = []
-
-	const hourly = responses[location];
+	const [current, utcOffset] = responses_dict[location];	
+	const weatherData = getWeatherData(current, utcOffset)
 	
-	const weatherData = getWeatherData(hourly)
-
-	
-	var temp_rep = "hot"
-	for (var temp of weatherData.hourly.temperature_2m){
+	if (aspect == "all" || aspect == "temperature" || aspect == "precipitation"){
+		var temp_rep = "hot"
+		const temp = weatherData.current.temperature_2m
 		if (Number(temp) < 5){
 			temp_rep = "cold"
+		}	
+		if (aspect == "temperature"){
+			return temp_rep
+		} else {
+			response.push(temp_rep)
 		}
-	}
-	response.push(temp_rep)
-	
-	var prec_rep = "dry"
-	for (var prec of weatherData.hourly.precipitation){
+
+		var prec_rep = "dry"
+		const prec = weatherData.current.precipitation
 		if (Number(prec) > 2){
 			prec_rep = "wet"
 		}		
-	}
-	response.push(prec_rep)
+		if (aspect == "precipitation"){
+			return prec_rep
+		} else {
+			response.push(prec_rep)
+		}
 
-	return response.join(" ")
+		return response.join(" ")
+	} else if (aspect == "visibility"){
+		var vis_rep = "good"
+		const vis = weatherData.current.visibility
+		if (Number(vis) < 4000){
+			vis_rep = "low"
+		}	
+		return vis_rep
+	} else if (aspect == "wind"){
+		var wind_rep = "strong"
+		const wind_speed = weatherData.current.wind_speed_10m
+		if (Number(wind_speed) <28){
+			wind_rep = "light"
+		}		
+		
+		var wind_d_rep = ""
+		const wind_dir = weatherData.current.wind_direction_10m
+		if (Number(wind_dir) >= 45 && Number(wind_dir) < 135){
+			wind_d_rep += "east"
+		} else if (Number(wind_dir) >= 135 && Number(wind_dir) < 225){
+			wind_d_rep += "south"
+		} else if (Number(wind_dir) >= 225 && Number(wind_dir) < 315){
+			wind_d_rep += "west"
+		} else if (Number(wind_dir) >= 315 || Number(wind_dir) < 45){
+			wind_d_rep += "north"
+		} 
+		wind_rep += " " + wind_d_rep	
+
+		return wind_rep
+	} else {
+		return "no info"
+	}
+
+	
 }

@@ -158,6 +158,20 @@ export const rules: Rules = {
     }
   },
 
+  integrate_goodbye: ({ is }) => {
+    for (const move of is.shared.lu!.moves) {
+      if (move.type === "goodbye") {
+        return () => ({
+          ...is,
+          private: {
+              ...is.private,
+              agenda: [{type: "goodbye", content: null}, ...is.private.agenda],
+          },
+        });
+      }
+    }
+  },
+
   /** TODO rule 2.7 integrate_usr_quit */
 
   /** TODO rule 2.8 integrate_sys_quit */
@@ -358,6 +372,15 @@ export const rules: Rules = {
           ...is.private,
           agenda: is.private.agenda.slice(1)
         }
+      });
+    }
+  },
+
+  select_goodbye: ({ is }) => {
+    if (is.private.agenda[0] && is.private.agenda[0].type === "goodbye") {
+      return () => ({
+        ...is,
+        next_moves: [...is.next_moves, is.private.agenda[0] as Move],
       });
     }
   },

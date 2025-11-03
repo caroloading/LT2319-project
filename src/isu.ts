@@ -27,29 +27,30 @@ const settings = {
 const dmMachine = setup({
   actors: {
     dme: dme,
-    getModelReply : fromPromise<any, Message[]> (({input}) => {
-      const body = {
-        model: "gemma2",
-        stream: false,
-        messages: input,
-        system: "You should only rephrase the message given to you.",
-        options: {
-              "num_predict": 20
-        }
-      };
-      return fetch("http://localhost:11434/api/chat", {
-        method: "POST",
-        body: JSON.stringify(body),
-      }).then((response) => response.json());
-    }
-    ),
+    //getModelReply : fromPromise<any, Message[]> (({input}) => {
+    //  const body = {
+    //    model: "gemma2",
+    //    stream: false,
+    //    messages: input,
+    //    system: "You should only rephrase the message given to you.",
+    //    options: {
+    //          top_k: 20,
+    //          top_p: 0.2
+    //    }
+    //  };
+    //  return fetch("http://localhost:11434/api/chat", {
+    //    method: "POST",
+    //    body: JSON.stringify(body),
+    //  }).then((response) => response.json());
+    //}
+    //),
   },
   actions: {
     speak_next_moves: ({ context, event }) =>
       context.ssRef.send({
         type: "SPEAK",
         value: {
-          utterance: nlg((event as NextMovesEvent).value),
+          utterance: nlg((event as NextMovesEvent).value) //context.nextUtterance,
         },
       }),
     listen: ({ context }) =>
@@ -66,7 +67,7 @@ const dmMachine = setup({
     return {
       ssRef: spawn(speechstate, { input: settings }),
       is: initialIS(),
-      nextMove: [{type: "greet", content: null}]
+      //nextMove: [{type: "greet", content: null}]
     };
   },
   id: "DM",
@@ -121,27 +122,15 @@ const dmMachine = setup({
         Generate: {
           initial: "Idle",
           states: {
-            //PrepLLM: {
-            //  invoke:{
-            //    src: "getModelReply",
-            //    input: ({context}) => [
-            //      {
-            //        role: "system", 
-            //        content: "Rephrase the utterances."
-            //      }
-            //    ],
-            //    onDone: {target: "Idle" }
-            //  }
-            //},
             Idle: {
               on: {
                 NEXT_MOVES: {
                   actions: [
-                    assign(({event}) => {
-                      return {
-                        nextMove: event.value
-                      }
-                    }), 
+                    //assign(({event}) => {
+                    //  return {
+                    //    nextMove: event.value
+                    //  }
+                    //}), 
                     sendTo("dmeID", ({ event }) => ({
                     type: "SAYS",
                     value: {
@@ -150,7 +139,7 @@ const dmMachine = setup({
                     },
                   }))
                   ], 
-                  target: "Speaking",
+                  target: "Speaking", //"GetUtterance"
                 },
               },
             },
@@ -163,13 +152,20 @@ const dmMachine = setup({
             //        content: nlg((context.nextMove!))
             //      }
             //    ],
-            //    onDone: {target: "Speaking",
-            //      actions: assign(({event, context}) => {
-            //        return {
-            //          nextUtterance: event.output.message.content
-            //        }
-            //      })
-            //     }
+            //    onDone: [
+            //      {
+            //        guard: ({event}) => event.output.message.content != "",
+            //        target: "Speaking",
+            //        actions: assign(({event, context}) => {
+            //          return {
+            //            nextUtterance: event.output.message.content
+            //          }
+            //        })
+            //      },
+            //      {                 
+            //        target: "GetUtterance", 
+            //      },
+            //    ]
             //  }
             //},
             Speaking: {

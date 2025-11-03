@@ -32,7 +32,8 @@ interface OtherMove {
     | "greet"
     | "request"
     | "no_input"
-    | "ask_repeat";
+    | "ask_repeat"
+    | "goodbye";
   content: null | string;
 }
 interface AnswerMove {
@@ -50,6 +51,7 @@ export type Action = {
   type:
     | "greet"
     | "ask_repeat"
+    | "goodbye"
     | "respond" // not to be used in plans
     | "raise"
     | "findout"
@@ -74,8 +76,8 @@ export interface InformationState {
 export interface DMContext extends TotalInformationState {
   ssRef: any;
   lastUserMoves?: Move[];
-  nextMove?: Move[]
-  nextUtterance?: string
+  //nextMove?: Move[]        // For LLM implementation
+  //nextUtterance?: string
 }
 
 export interface DMEContext extends TotalInformationState {
