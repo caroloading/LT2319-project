@@ -39,6 +39,10 @@ const nluMapping: NLUMapping = {
     type: "ask",
     content: WHQ("look_up_vis"),
   }],
+  "what about the visibility?": [{
+    type: "ask",
+    content: WHQ("look_up_vis"),
+  }],
   "what is the rain going to be like?": [{
     type: "ask",
     content: WHQ("look_up_prec"),
@@ -63,6 +67,10 @@ const nluMapping: NLUMapping = {
     type: "ask",
     content: WHQ("look_up_wind"),
   }],
+  "and the wind": [{
+    type: "ask",
+    content: WHQ("look_up_wind"),
+  }],
   "tell me about the wind.": [{
     type: "ask",
     content: WHQ("look_up_wind"),
@@ -70,6 +78,10 @@ const nluMapping: NLUMapping = {
   "how cold is it?": [{
     type: "ask",
     content: WHQ("look_up_temp"),
+  }],
+  "what about rain?": [{
+    type: "ask",
+    content: WHQ("look_up_prec"),
   }],
   "here": [{
     type: "answer",
@@ -112,6 +124,10 @@ const nluMapping: NLUMapping = {
     content: null,
   }],
   "that's all": [{
+    type: "goodbye",
+    content: null,
+  }],
+  "bye, bye": [{
     type: "goodbye",
     content: null,
   }],
