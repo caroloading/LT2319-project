@@ -58,7 +58,7 @@ export function mapWeather(location:string, aspect: string): string {
 	if (aspect == "all" || aspect == "temperature" || aspect == "precipitation"){
 		var temp_rep = "hot"
 		const temp = weatherData.current.temperature_2m
-		if (Number(temp) < 5){
+		if (Number(temp) < 10){
 			temp_rep = "cold"
 		}	
 		if (aspect == "temperature"){

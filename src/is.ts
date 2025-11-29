@@ -69,14 +69,14 @@ export const initialIS = (): InformationState => {
             consultDB(WHQ("look_up_wind")),
           ],
         },
-        //{
-        //  type: "issue",
-        //  content: WHQ("look_up_traffic"),
-        //  plan: [                        
-        //    findout(WHQ("location")),
-        //    consultDB(WHQ("look_up_traffic")),
-        //  ],
-        //},
+        {
+          type: "issue",
+          content: WHQ("look_up_traffic"),
+          plan: [                        
+            findout(WHQ("location")),
+            consultDB(WHQ("look_up_traffic")),
+          ],
+        }, 
       ],
     },
     database: {
@@ -103,11 +103,11 @@ export const initialIS = (): InformationState => {
           const answer = mapWeather(location!, 'precipitation') 
           ans = { predicate: "look_up_prec", argument: answer }
         } 
-        //else if (objectsEqual(question, WHQ("look_up_traffic"))) {
-        //  const location = getFactArgument(facts, "location");
-        //  const answer = 
-        //  ans = { predicate: "look_up_traffic", argument: answer }
-        //}
+        else if (objectsEqual(question, WHQ("look_up_traffic"))) {
+          const location = getFactArgument(facts, "location");
+          const answer = "no info"
+          ans = { predicate: "look_up_traffic", argument: answer }
+        }
 
         return ans;
       },

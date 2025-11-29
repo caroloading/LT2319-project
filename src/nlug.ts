@@ -83,6 +83,18 @@ const nluMapping: NLUMapping = {
     type: "ask",
     content: WHQ("look_up_prec"),
   }],
+  "what is the traffic like?": [{
+    type: "ask",
+    content: WHQ("look_up_traffic"),
+  }],
+  "how's the traffic?": [{
+    type: "ask",
+    content: WHQ("look_up_traffic"),
+  }],
+  "is it busy right now?": [{
+    type: "ask",
+    content: WHQ("look_up_traffic"),
+  }],
   "here": [{
     type: "answer",
     content: "gothenburg"
@@ -294,9 +306,16 @@ const nlgMapping: NLGMapping = [
   [
     {
       type: "answer",
-      content: { predicate: "look_up_wind=", argument: "no info" },
+      content: { predicate: "look_up_wind", argument: "no info" },
     },
     "There seems to be an issue fetching this information.",
+  ],  
+  [
+    {
+      type: "answer",
+      content: { predicate: "look_up_traffic", argument: "no info" },
+    },
+    "I cannot find traffic information right now.",
   ],  
 ];
 
