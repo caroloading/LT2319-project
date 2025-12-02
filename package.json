@@ -19,7 +19,9 @@
     "@statelyai/inspect": "^0.4.0",
     "openmeteo": "^1.2.1",
     "speechstate": "^2.15.0",
-    "ws": "^8.18.3"
+    "websocket": "^1.0.35",
+    "ws": "^8.18.3",
+    "yarn": "^1.22.22"
   },
   "packageManager": "yarn@3.6.4+sha256.7f7d51b38db0d94adf25c512e3f3d3b47d23c97922eecc540f7440f116bdb99a"
 }
